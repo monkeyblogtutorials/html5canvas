@@ -8,6 +8,7 @@ var Ball = function Ball(ptPos, radius, color, ptVelocity) {
 };
 
 Ball.prototype.draw = function(ctx) {
+
     ctx.save();
     ctx.beginPath();
     ctx.fillStyle = this.color;
