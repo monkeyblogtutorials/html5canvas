@@ -5,18 +5,21 @@ var Game = function Game(canvasId) {
 
 Game.prototype.init = function init() {
     this.canvas = document.getElementById(this.canvasId);
+    this.canvas.addEventListener('click', this.canvasClickHandler.bind(this));
     this.state = {
         size: {
             width: this.canvas.width,
             height: this.canvas.height
         }
     };
-    this.balls = [
-        new Ball(new Point(50, 50), 15, 'red', new Point(6, 3)),
-        new Ball(new Point(200, 120), 25, 'blue', new Point(-7, -4)),
-        new Ball(new Point(150, 250), 20, 'green', new Point(.75, 6))
-    ];
+    this.balls = [];
     this.ctx = this.canvas.getContext('2d');
+};
+
+Game.prototype.canvasClickHandler = function(e) {
+    this.balls.push(
+        new Ball(new Point(e.offsetX, e.offsetY), 20, 'red', new Point(0, 0))
+    );
 };
 
 Game.prototype.update = function() {
