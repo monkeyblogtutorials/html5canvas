@@ -10,16 +10,31 @@ Game.prototype.init = function init() {
         size: {
             width: this.canvas.width,
             height: this.canvas.height
-        }
+        },
+        gravity: .3
     };
     this.balls = [];
     this.ctx = this.canvas.getContext('2d');
 };
 
+Game.prototype.getRandomColor = function() {
+    var letters = '456789AB';
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 8)];
+    }
+    return color;
+}
+
 Game.prototype.canvasClickHandler = function(e) {
-    this.balls.push(
-        new Ball(new Point(e.offsetX, e.offsetY), 20, 'red', new Point(0, 0))
-    );
+    this.balls = [
+        new Ball(
+            new Point(e.offsetX, e.offsetY),
+            10 + Math.random()*20,
+            this.getRandomColor(),
+            new Point(-2 + Math.random()*4, 0)
+        )
+    ];
 };
 
 Game.prototype.update = function() {

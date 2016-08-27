@@ -3,6 +3,8 @@ var Ball = function Ball(ptPos, radius, color, ptVelocity) {
     this.radius = radius;
     this.color = color;
     this.velocity = ptVelocity;
+    this.bounce = .65;
+    this.minVelocity = .5;
 };
 
 Ball.prototype.draw = function(ctx) {
@@ -16,21 +18,36 @@ Ball.prototype.draw = function(ctx) {
 };
 
 Ball.prototype.update = function(state) {
-    this.pos.x += this.velocity.x;
-    this.pos.y += this.velocity.y;
 
-    var isOutside = {
-        right: this.pos.x + this.radius > state.size.width,
-        left: this.pos.x - this.radius < 0,
-        bottom: this.pos.y + this.radius > state.size.height,
-        top: this.pos.y - this.radius < 0
-    };
+    var isOutside,
+        maxPosY = state.size.height - this.radius;
 
-    if(isOutside.left || isOutside.right) {
-        this.velocity.x = -this.velocity.x;
+    // vertical
+    if(this.velocity.y || this.pos.y < maxPosY) {
+        this.velocity.y += state.gravity;
+        this.pos.y += this.velocity.y;
+        isOutside = {
+            bottom: this.pos.y + this.radius > state.size.height,
+            top: this.pos.y - this.radius < 0
+        };
+        if(isOutside.top || isOutside.bottom) {
+            this.pos.y = isOutside.top ? 0 + this.radius : state.size.height - this.radius;
+            this.velocity.y = -this.velocity.y * this.bounce;
+        }
+        if(Math.abs(this.velocity.y) <= this.minVelocity && this.pos.y >= maxPosY) {
+            this.velocity.y = 0;
+            this.color = 'red';
+        }
     }
 
-    if(isOutside.top || isOutside.bottom) {
-        this.velocity.y = -this.velocity.y;
+    // horizontal
+    this.pos.x += this.velocity.x;
+    isOutside = {
+        right: this.pos.x + this.radius > state.size.width,
+        left: this.pos.x - this.radius < 0
+    };
+    if(isOutside.left || isOutside.right) {
+        this.pos.x = isOutside.left ? 0 + this.radius : state.size.width -  this.radius;
+        this.velocity.x = -this.velocity.x * this.bounce;
     }
 };
