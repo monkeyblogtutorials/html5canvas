@@ -1,0 +1,19 @@
+{
+  "name": "html5canvas",
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/monkeyblogtutorials/html5canvas.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/monkeyblogtutorials/html5canvas/issues"
+  },
+  "homepage": "https://github.com/monkeyblogtutorials/html5canvas#readme",
+  "devDependencies": {
+    "concat-files": "^0.1.0",
+    "git-branch-name": "^1.1.0"
+  }
+}
