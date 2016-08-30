@@ -1,5 +1,8 @@
 <?php
 
+// temp dir
+$tmpDir = sys_get_temp_dir();
+
 // check we're on master
 $out = [];
 exec('git status', $out);
@@ -16,6 +19,11 @@ if(!isset($out[2]) || substr($out[2], 0, strlen($prefix)) != $prefix) {
 }
 echo "Check no uncommitted changes: ok\n";
 
+// copy files to tmp so we can access them when checking out other branches
+$out = [];
+exec(sprintf('cp server.js %d', $tmpDir), $out);
+exec(sprintf('cp template.html %d', $tmpDir), $out);
+
 // get list of all (remote) branches
 echo "Fetching remote branch-names...\n";
 $out = [];
@@ -28,7 +36,7 @@ foreach($out AS $line) {
         echo "Checkout " . $branch . "...\n";
         exec(sprintf('git checkout %s', $branch)); // checkout branch
         exec('git pull'); // pull latest changes
-        exec('node server.js', $output);
+        exec(sprintf('node %d', implode(DIRECTORY_SEPARATOR, [$tmpDir, 'server.js'])), $output);
         foreach($output AS $msg) {
             echo $msg . "\n";
         }
