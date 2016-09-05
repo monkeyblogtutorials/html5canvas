@@ -1,11 +1,14 @@
 <?php
 
-$saveDir = '/var/www/html5canvas/session_test/data/';
+$saveDir = '/var/www/sessiondata/';
+
+$allParams = $_GET;
 
 if ($handle = opendir($saveDir)) {
     while (false !== ($entry = readdir($handle))) {
         if ($entry != "." && $entry != "..") {
-            echo sprintf('<a href="index.php?f=%s">%s</a><br/>', $entry, $entry);
+            $allParams['f'] = $entry;
+            echo sprintf('<a href="index.php?%s">%s</a><br/>', http_build_query($allParams), $entry);
         }
     }
     closedir($handle);
@@ -13,19 +16,32 @@ if ($handle = opendir($saveDir)) {
 
 echo '<hr>';
 
+function _forceReadableObject($o, $castTo = 'stdClass')
+{
+    if(!is_object($o) && gettype($o) == 'object') { // = detect `__PHP_Incomplete_Class`
+
+        $serialized = serialize($o);
+        $casted = preg_replace('/^O:\d+:"[^"]++"/', 'O:' . strlen($castTo) . ':"'.$castTo.'"', $serialized);
+        return unserialize($casted);
+    }
+    return $o;
+}
+
 function getEntries($array, $prefix = 'SESSION') {
     $result = [];
     foreach($array AS $key => $value) {
         $newPrefix = $prefix.".".$key;
         $type = gettype($value);
         if(in_array($type, ['boolean', 'integer', 'string', 'NULL', 'double', 'float', 'resource', 'unknown type'])) {
-            $result[] = $newPrefix . ' = ' . (string) $value;
+            $result[] = $newPrefix . ' = ' . gettype($value) . '; ' . $value;
         }
         if(in_array($type, ['array'])) {
             $result = array_merge($result, getEntries($value, $newPrefix));
         }
         if($type == 'object') {
-            $result[] = $newPrefix . ' = ' . str_replace(["\n", "\r", "\n\r", "\r\n", "\t", '  '], "", var_export($value, true));
+            $stdObject = _forceReadableObject($value);
+            $objectAsArray = get_object_vars($stdObject);
+            $result = array_merge($result, getEntries($objectAsArray, $newPrefix.'[OBJECT]'));
         }
     }
     return $result;
@@ -36,14 +52,18 @@ if(isset($_REQUEST['f'])) {
     $data = unserialize($content);
     $entries = getEntries($data);
     if(isset($_REQUEST['s'])) {
-        echo implode('<br/>', array_filter($entries, function ($value) {
-            $a = stripos($value, $_REQUEST['s']) === false;
-            return !$a;
+        $searches = explode("|", $_REQUEST['s']);
+        echo implode('<br/>', array_filter($entries, function ($value) use ($searches) {
+            foreach($searches AS $search) {
+                $a = stripos($value, $search) === false;
+                if(!$a) {
+                    return true;
+                }
+            }
+            return false;
         }));
     } else {
-        echo '<pre>';
-        echo '<div style="background-color:black;color:white;">'.__CLASS__.'::'.__FUNCTION__.'('.__LINE__.')</div>';
-        print_r($entries);
+        echo implode("<br/>", $entries);
         exit;
     }
 }
